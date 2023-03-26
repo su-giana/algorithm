@@ -1,3 +1,8 @@
+#include <iostream>
+#include <vector>
+
+using namespace std;
+
 class Solution {
 public:
     int isCycle(vector<vector<int> >& map, int cur, int target, int size)
