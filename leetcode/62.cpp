@@ -1,6 +1,11 @@
+#include <iostream>
+#include <vector>
+
+using namespace std;
+
 class Solution {
 public:
-vector<int> pibonacci(int n)
+    vector<int> pibonacci(int n)
     {
         vector<int> pibo(1000);
         pibo[0] = 1;
