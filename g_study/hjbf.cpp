@@ -5,6 +5,24 @@
 
 using namespace std;
 
+vector<vector<int> > floyd_war(vector<vector<int> > graph, int n)
+{
+    for(int i = 0 ; i<n ; i++)
+    {
+        for(int j = 0 ; j<n ; j++)
+        {
+            for(int k = 0 ; k<n ; k++)
+            {
+                if(graph[i][j] >  graph[i][k] + graph[k][j])
+                {
+                    graph[i][j] = graph[i][k] + graph[k][j];
+                }
+            }
+        }
+    }
+    return graph;
+}
+
 vector<pair<int, int> > dijkstra(int start, int n, vector<pair<int, int> >graph[])
 {
     vector<pair<int, int> > dist(n, make_pair(0, INT_MAX));   // list to store minimum path
@@ -49,6 +67,7 @@ int main()
 {
     int n, m;
     cin>>n>>m;
+    vector<vector<int> > map(n, vector<int>(n, 0));
     vector<pair<int, int> > graph[n];
 
     for (int i = 0; i < m; i++)
@@ -57,6 +76,9 @@ int main()
         cin >> from >> to >> cost;
         graph[from].push_back(make_pair( to, cost ));  // 무향 그래프라 가정하므로 시작점과 끝점 둘 다 벡터에 넣어야 함
         graph[to].push_back(make_pair( from, cost ));
+
+        map[from][to] = cost;
+        map[to][from] = cost;
     }
     
     int candid = INT_MAX;
