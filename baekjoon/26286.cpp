@@ -19,9 +19,9 @@ int main()
     }
 
     int draw = 0;
-
     vector<pair<int, int> > scores;
     scores.push_back(make_pair(a, b));
+    if(scores.back().first == 0 && scores.back().second == 0) draw++;
 
     for(int i = 1 ; i<n ; i++)
     {
