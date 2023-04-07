@@ -6,38 +6,44 @@
 using namespace std;
 
 int n, m;
+int r = 0, c = 0;
+int temp = 0;
 vector<int> dx = {0, 0, -1, 1};
 vector<int> dy = {-1, 1, 0, 0};
 
-int getMax(vector<vector<int> >& map, vector<vector<bool> >& visited, int i, int j)
+int dfs(vector<vector<int> >& map, int i, int j)
 {
     int n = map.size(), m = map[0].size();
     if((i<0 || i>=n || j<0 || j>=m) || map[i][j] == -1)    return -1;
-    if(visited[i][j])   return map[i][j];
+    if(map[i][j] != INT_MAX)    return map[i][j];
 
-    int temp = map[i][j];
-    visited[i][j] = true;
     for(int k = 0 ; k<4 ; k++)
     {
-        int ti = i+dx[k], tj = j + dy[k];
-        temp = max(temp, getMax(map, visited, ti, tj));
+        if(!(i<=0 || j<=0 || i >= n-1 || j>=m-1) && map[i+dx[k]][j+dy[k]] != -1 && map[i+dx[k]][j+dy[k]] != INT_MAX)
+            map[i][j] = min(map[i][j], map[i+dx[k]][j+dy[k]]);
     }
+    if(map[i][j] != INT_MAX)
+    {
+        map[i][j] += 1;
+        return map[i][j];
+    }
+
+    map[i][j] = -1;
     
-    return temp;
-}
-
-void dfs(vector<vector<int> >& map, int i, int j, int count)
-{
-    int n = map.size(), m = map[0].size();
-    if((i<0 || i>=n || j<0 || j>=m) || map[i][j] <= count)    return;
-
-    map[i][j] = count;
 
     for(int k = 0 ; k<4 ; k++)
     {
         int ti = i+dx[k], tj = j + dy[k];
-        dfs(map, ti, tj, count+1);
-    }
+        if(dfs(map, ti, tj)!=-1)
+        {
+            if(map[i][j] == -1) map[i][j] = map[ti][tj]+1;
+            map[i][j] = min(map[i][j], map[ti][tj]+1);
+        }
+
+    } 
+
+    if(map[i][j] == -1) {map[i][j] = 0; return 0;}
+    return map[i][j];
 }
 
 int main()
@@ -57,22 +63,22 @@ int main()
     }
 
     int answer = 0;
-    vector<vector<int> > copied(n, vector<int>(m));
     for(int i = 0 ; i<n ; i++)
     {
         for(int j = 0 ; j<m ; j++)
         {
-            
-            if(map[i][j] != -1)
+            if(map[i][j] == INT_MAX)
             {
-                copy(map.begin(), map.end(), copied.begin());
-                dfs(copied, i, j, 1);
+                dfs(map, i, j);
             }
             
-            vector<vector<bool> > visited(n, vector<bool>(m, false));
-            answer = max(answer, getMax(copied, visited, i, j)-1);
         }
     } 
+
+    for(int i = 0 ; i<n ; i++)
+    {
+        answer = max(answer, *max_element(map[i].begin(), map[i].end()));
+    }
 
     cout<<answer;
 }
