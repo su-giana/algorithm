@@ -59,3 +59,60 @@ public:
         return maxCount;
     }
 }; */
+
+class Solution {
+public:
+    int largestPathValue(string colors, vector<vector<int>>& edges) {
+        int n = colors.length();
+        int k = 26;
+        vector<vector<int> > graph(n, vector<int>());
+        vector<int> indegree(n, 0);
+
+        for(int i = 0 ; i<edges.size() ; i++)
+        {
+            int u = edges[i][0];
+            int v = edges[i][1];
+            graph[u].push_back(v);
+            indegree[v]++;
+        }
+
+        unordered_set<int> zero_indegree;
+        for(int i = 0 ; i<n ; i++)
+        {
+            if(indegree[i] == 0)
+            zero_indegree.insert(i);
+        }
+
+        vector<vector<int> > count(n, vector<int>(k, 0));
+        for(int i = 0 ; i<n ; i++)
+        {
+            count[i][colors[i] - 'a']++;
+        }
+
+        int max_count = 0;
+        int visited = 0;
+
+        while(!zero_indegree.empty())
+        {
+            int u = *zero_indegree.begin();
+            zero_indegree.erase(u);
+            visited++;
+            for(int v : graph[u])
+            {
+                for(int i = 0; i<k ; i++)
+                {
+                    count[v][i] = max(count[v][i], count[u][i] + (colors[v] - 'a' == i ? 1 : 0));
+                }
+                indegree[v]--;
+                if(indegree[v] == 0)
+                {
+                    zero_indegree.insert(v);
+                }
+               
+            }
+            max_count = max(max_count, *max_element(count[u].begin(), count[u].end()));
+        }
+
+        return visited == n ? max_count : -1;
+    }
+};
