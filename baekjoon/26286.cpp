@@ -47,6 +47,7 @@ int main()
             }
         }
     }
+    
 
     cout<<draw<<endl;
     for(int i = 0 ; i<scores.size() ; i++)
