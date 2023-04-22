@@ -6,7 +6,7 @@
 
 using namespace std;
 
-unordered_map<string, int> paths;
+/* unordered_map<string, int> paths;
 
 string getString(vector<int>& trees)
 {
@@ -34,7 +34,7 @@ int getMax(const vector<int>& trees)
 vector<int> mergeTrees(vector<int>& trees, int depth)
 {
     int n = trees.size();
-    if(n==1 || !depth)
+    if(n<2 || depth<1)
     {
         return trees;
     }   
@@ -83,11 +83,12 @@ int main()
     int n, m;
     cin>>n>>m;
     vector<int> trees;
-    int t, pre, count = 1;
+    int pre, count = 1;
     cin>>pre;
 
     for(int i = 0 ; i<n-1 ; i++)
     {
+        int t;
         cin>>t;
 
         if(pre == t)    count++;
@@ -105,4 +106,45 @@ int main()
     if(m >= n-1)    { cout<<accumulate(trees.begin(), trees.end(), 0); return 0; }
 
     cout<<getMax(mergeTrees(trees, m));
+} */
+
+int main()
+{
+    int n, m;
+    cin>>n>>m;
+
+    vector<vector<vector<int> > > dp(n+1, vector<vector<int> >(m+2, vector<int>(3, 0)));
+    vector<int> trees(n+1, 0);
+
+    for(int i = 1 ; i<=n ; i++)
+    {
+        cin>>trees[i];
+    }
+
+    for(int i = 1 ; i<=n ; i++)
+    {
+        for(int j=1 ; j<=m+1 ; j++)
+        {
+            if(i==1 && j==1)    continue;
+
+            if(trees[i] == 1)
+            {
+                dp[i][j][1] = max(dp[i-1][j][1] + 1, dp[i-1][j-1][2] + 1);
+                dp[i][j][2] = max(dp[i-1][j][2], dp[i-1][j-1][1]);
+            }
+            else
+            {
+                dp[i][j][2] = max(dp[i-1][j][2] + 1, dp[i-1][j-1][1] + 1);
+                dp[i][j][1] = max(dp[i-1][j][1], dp[i-1][j-1][2]);
+            }
+        }
+    }
+
+    int ans = 0;
+    for(int i = 1 ; i<=m+1 ; i++)
+    {
+        ans = max(ans, max(dp[n][i][1], dp[n][i][2]));
+    }
+
+    cout<<ans;
 }
