@@ -113,37 +113,50 @@ int main()
     int n, m;
     cin>>n>>m;
 
-    vector<vector<vector<int> > > dp(n+1, vector<vector<int> >(m+2, vector<int>(3, 0)));
-    vector<int> trees(n+1, 0);
+    vector<vector<vector<int> > > dp(3, vector<vector<int> >(m+1, vector<int>(n+1, -1)));
+    vector<int> trees(n, 0);
 
-    for(int i = 1 ; i<=n ; i++)
+    for(int i = 0 ; i<n ; i++)
     {
         cin>>trees[i];
     }
 
-    for(int i = 1 ; i<=n ; i++)
-    {
-        for(int j=1 ; j<=m+1 ; j++)
-        {
-            if(i==1 && j==1)    continue;
+    dp[1][m][0] = 0;
 
-            if(trees[i] == 1)
+    for(int i = 0 ; i<n ; i++)
+    {
+        for(int j = 0 ; j<=m ; j++)
+        {
+            for(int k = 1 ; k<=2 ; k++)
             {
-                dp[i][j][1] = max(dp[i-1][j][1] + 1, dp[i-1][j-1][2] + 1);
-                dp[i][j][2] = max(dp[i-1][j][2], dp[i-1][j-1][1]);
-            }
-            else
-            {
-                dp[i][j][2] = max(dp[i-1][j][2] + 1, dp[i-1][j-1][1] + 1);
-                dp[i][j][1] = max(dp[i-1][j][1], dp[i-1][j-1][2]);
+                if(dp[k][j][i]>=0)
+                {
+                    int nextTree = trees[i];
+                    if(k == nextTree)     // when pulm dropped in the same tree
+                    {
+                        dp[nextTree][j][i+1] = dp[nextTree][j][i] + 1;
+                    }
+                    else
+                    {
+                        if(j)      // when we pick a pulm as moving to the another tree
+                        {
+                            dp[nextTree][j-1][i+1] = max(dp[nextTree][j-1][i+1], dp[k][j][i]+1);
+                        }
+                        dp[k][j][i+1] = dp[k][j][i];
+                    }
+                }
             }
         }
     }
 
     int ans = 0;
-    for(int i = 1 ; i<=m+1 ; i++)
+    for(int k = 1 ; k<=2 ; k++)
     {
-        ans = max(ans, max(dp[n][i][1], dp[n][i][2]));
+        for(int t = 0 ; t<=n ; t++)
+            ans = max(ans, dp[k][0][t]);
+        
+        for(int w = 1 ; w<=m ; w++)
+            ans = max(ans, dp[k][w][0]);
     }
 
     cout<<ans;
