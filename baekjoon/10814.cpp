@@ -33,7 +33,7 @@ int main()
         spots.push_back(make_pair(x, y));
     }
 
-    sort(spots.begin(), spots.end(), compare);
+    stable_sort(spots.begin(), spots.end(), compare);
 
     for(int i = 0 ; i<n ; i++)
     {
