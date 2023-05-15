@@ -3,6 +3,13 @@
 
 using namespace std;
 
+void init()
+{
+    ios_base::sync_with_stdio(false);
+    cin.tie(0);
+    cout.tie(0);
+}
+
 struct Paper
 {
     public:
@@ -31,28 +38,40 @@ Paper getPaper(Paper paper, vector<vector<int> >& papers)
         return paper;
     }
 
+    bool allMinusOne = true, allZero = true, allOne = true;
+
     int div = paper.n/3;
     for(int i = 0 ; i<paper.n ; i += div)
     {
         for(int j = 0 ; j<paper.n ; j += div)
         {
             Paper temp = getPaper(Paper(paper.x+i, paper.y+j, div), papers);
-            for(int k = 0 ; k<3 ; k++)
+            
+            if(!(temp.nums[0] && !temp.nums[1] && !temp.nums[2]))
+                allMinusOne = false;
+            if(!(!temp.nums[0] && temp.nums[1] && !temp.nums[2]))
+                allZero = false;
+            if(!(!temp.nums[0] && !temp.nums[1] && temp.nums[2]))
+                allOne = false;
+            
+            for(int i = 0 ; i<3 ; i++)
             {
-                paper.nums[k] += temp.nums[k];
+                paper.nums[i] += temp.nums[i];
             }
         }
     }
 
-    for(int i = 0 ; i<3 ; i++)
-    {
-        if(paper.nums[i] == 9)  paper.nums[i] = 1;
-    }
+    if(allMinusOne) paper.nums = {1, 0, 0};
+    else if(allZero)    paper.nums = {0, 1, 0};
+    else if(allOne)     paper.nums = {0, 0, 1};
+
     return paper;
 }
 
 int main()
 {
+    init();
+
     int n;
     cin>>n;
     
