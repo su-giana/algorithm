@@ -1,34 +1,39 @@
 #include <iostream>
 #include <vector>
+#include <queue>
 
 using namespace std;
 
-int chDigit(string a, string b, vector<int>& primes, int cnt)
+int chDigit(string a, string b, vector<int> primes)
 {
-    if(a==b)    return cnt;
-    cout<<a<<endl;
-    if(stoi(a)<1000)    return 10000;   
+    queue<string> que;
+    que.push(a);
+    primes[stoi(a)] = 0;
 
-    int isPrime = 10000;
-    string temp = "";
-
-    for(int i = 0 ; i<4 ; i++)
+    while(!que.empty())
     {
-        for(char j = '0' ; j<='9' ; j++)
+        string cur = que.front();
+        que.pop();
+        if(primes[stoi(cur)] >= primes[stoi(b)])    continue;
+
+        for(int i = 0 ; i<4 ; i++)
         {
-            if(temp[i]==j)    continue;
-            temp = a;
-            temp[i] = j;
-            
-            if(primes[stoi(temp)])
+            for(char j = '0' ; j<='9' ; j++)
             {
-                isPrime = min(isPrime, chDigit(temp, b, primes, cnt+1));
+                if(i==0 && j=='0')  continue;
+                string next = cur;
+                next[i] = j;
+            
+                if(primes[stoi(next)] > primes[stoi(cur)] + 1)
+                {
+                    primes[stoi(next)] = primes[stoi(cur)] + 1;
+                    que.push(next);
+                }
             }
         }
     }
 
-    if(isPrime==10000)    return 10000;
-    return isPrime;
+    return primes[stoi(b)];
 }
 
 void init()
@@ -40,7 +45,7 @@ void init()
 
 int main()
 {
-    vector<int> primes(10000, 0);
+    vector<int> primes(10000, 10001);
     primes[0] = -1;
     primes[1] = -1;
     for(int i = 0 ; i*i<10000 ; i++)
@@ -63,9 +68,9 @@ int main()
         string start, end;
         cin>>start>>end;
 
-        int cnt = chDigit(start, end, primes, 0);
+        int minCnt = chDigit(start, end, primes);
         
-        if(cnt==10000) cout<<"Impossible"<<'\n';
-        else        cout<<cnt<<'\n';
+        if(minCnt==10001)            cout<<"Impossible"<<'\n';
+        else                         cout<<minCnt<<'\n';
     }
 }
