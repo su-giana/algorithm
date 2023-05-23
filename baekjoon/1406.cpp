@@ -1,82 +1,78 @@
 #include <iostream>
 #include <vector>
+#include <deque>
 
 using namespace std;
 
-int edit(vector<char>& str, char cmd, char c, int cursor)
+void init()
 {
-    str.insert(str.begin() + cursor, c);
-    return cursor + 1;
-}
-
-int edit(vector<char>& str, char cmd, int cursor)
-{
-    switch(cmd)
-    {
-        case 'L':
-        {
-            if(cursor>0)
-            {
-                cursor--;
-            }
-            return cursor;
-        }
-        case 'D':
-        {
-            if(cursor<str.size())
-            {
-                cursor++;
-            }
-            return cursor;
-        }
-        case 'B':
-        {
-            if(cursor>0)
-            {
-                cursor--;
-                str.erase(str.begin() + cursor);
-            }
-            return cursor;
-        }
-    }
-    return cursor;
+    ios_base::sync_with_stdio(false);
 }
 
 int main()
 {
+    init();
+
     string s;
     cin>>s;
-    vector<char> str;
-    
     int n = s.length();
-    int cursor = n;
-    for(int i = 0 ; i<n ; i++)
-    {
-        str.push_back(s[i]);
-    }
+    
+    deque<char> s1;
+    deque<char> s2;
 
-    cin>>n;
     for(int i = 0 ; i<n ; i++)
+        s1.push_back(s[i]);
+
+    int m;
+    cin>>m;
+    for(int i = 0 ; i<m ; i++)
     {
         char cmd;
         cin>>cmd;
 
-        if(cmd=='P')
+        switch(cmd)
         {
-            char c;
-            cin>>c;
+            case 'L':
+            {
+                if(s1.empty())  continue;
+                s2.push_back(s1.back());
+                s1.pop_back();
+                break;
+            }
+            case 'D':
+            {
+                if(s2.empty())  continue;
+                s1.push_back(s2.back());
+                s2.pop_back();
+                break;
+            }
+            case 'B':
+            {
+                if(s1.empty())  continue;
+                s1.pop_back();
+                break;
+            }
+            case 'P':
+            {
+                char c;
+                cin>>c;
+                s1.push_back(c);
+                break;
+            }
+        }
+    }
 
-            cursor = edit(str, cmd, c, cursor);
-        }
-        else
-        {
-            cursor = edit(str, cmd, cursor);
-        }
-    }
-    
-    int m = str.size();
-    for(int i = 0 ; i<m ; i++)
+    string ans = "";
+    while(!s1.empty())
     {
-        cout<<str[i];
+        cout<<s1.front();
+        s1.pop_front();
     }
+    while(!s2.empty())
+    {
+        cout<<s2.back();
+        s2.pop_back();
+    }
+
+    cout<<ans;
 }

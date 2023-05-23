@@ -8,6 +8,9 @@
 using namespace std;
 
 vector<int> students(100001, 0);
+int visitOrder = 1;
+int answer = 0;
+int depth = 1;
 
 void init()
 {
@@ -16,76 +19,53 @@ void init()
     ios_base::sync_with_stdio(false);
 }
 
-void dfs(vector<vector<int> >& vertices, vector<bool>& visited, int vertex)
+void dfs(vector<int>& arr, vector<int>& visited, vector<bool>& finished, int cur)
 {
-    int n = vertices.size();
+    visited[cur] = visitOrder++;
 
-    queue<int> que;
-    stack<int> st;
-    que.push(vertex);
-    vector<bool> Nvisited(n, false);
-
-    while(!que.empty())
+    int next = arr[cur];
+    if(visited[next] == -1)
     {
-        int cur = que.front();
-        que.pop();
-
-        if(Nvisited[cur])   continue;
-        Nvisited[cur] = true;
-        visited[cur] = true;
-        st.push(cur);
-
-        n = vertices[cur].size();
-        for(int i = 0 ; i<n ; i++)
-        {
-            int next = vertices[cur][i];
-            if(!Nvisited[next])
-            {
-                que.push(next);
-            }
-            else
-            {
-                while(!st.empty() && st.top() != next)
-                {
-                    students[st.top()] = 1;
-                    st.pop();
-                }
-                students[st.top()] = 1;
-                st.pop();
-            }
-        }
+        dfs(arr, visited, finished, next);
     }
+    else if(!finished[next])
+    {
+        answer += visited[cur] - visited[next] + 1;
+    }
+
+    finished[cur] = true;
 }
 
 int main()
 {
+    init();
+
     int t;
     cin>>t;
     
-    for( ; t>0 ; t--)
+    while(t--)
     {
+        answer = 0;
+        visitOrder = 0;
         int n;
         cin>>n;
-
-        vector<vector<int> > vertices(n+1, vector<int>());
+        vector<int> arr(n+1, 0);
         for(int i = 1 ; i<=n ; i++)
         {
-            int selected;
-            cin>>selected;
-
-            vertices[i].push_back(selected);
+            int num;
+            cin>>num;
+            arr[i] = num;
         }
-
-        vector<bool> visited(n+1, false);
+        vector<int> visited(n+1, -1);
+        vector<bool> finished(n+1, false);
 
         for(int i = 1 ; i<=n ; i++)
         {
-            if(!visited[i])
+            if(!finished[i])
             {
-                dfs(vertices, visited, i);
-            }       
+                dfs(arr, visited, finished, i);
+            }
         }
-
-        cout<<n - accumulate(students.begin()+1, students.begin() + n + 1, 0)<<endl;
+        cout<<n - answer<<'\n';
     }
 }
