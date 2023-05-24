@@ -18,6 +18,7 @@ pair<long long, long long> dfs(vector<vector<pair<int, int> > >& graph, vector<b
     int v = graph.size();
     visited[cur] = true;
     
+
     int n = graph[cur].size();
     priority_queue<long long> q1;
     priority_queue<long long> q2;
@@ -48,12 +49,21 @@ int main()
     cin>>v;
     vector<vector<pair<int, int> > > graph(v+1, vector<pair<int, int> >());
 
-    for(int i = 0 ; i<v-1 ; i++)
+    for(int i = 0 ; i<v ; i++)
     {
-        int x, y, w;
-        cin>>x>>y>>w;
+        int x;
+        cin>>x;
 
-        graph[x].push_back(make_pair(y, w));
+        while(true)
+        {
+            int y;
+            cin>>y;
+            if(y==-1)   break;
+
+            int w;
+            cin>>w;
+            graph[x].push_back(make_pair(y, w));
+        }
     }
 
     long long maxSum = 0;
