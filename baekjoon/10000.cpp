@@ -1,16 +1,19 @@
 #include <iostream>
 #include <vector>
-#include <algorithm>
+#include <unordered_map>
 #include <queue>
+#include <set>
+#include <algorithm>
 
 using namespace std;
 
 vector<pair<long long, long long> > circles;
+long long answer = 0;
 
 bool compare(pair<long long, long long>& a, pair<long long, long long>& b)
 {
-    if(a.first != b.first)  return a.first < b.first;
-    return (a.second - a.first) > (b.second - b.first);
+    if(a.first == b.first) return a.second > b.second;
+    return a.first < b.first;
 }
 
 void init()
@@ -20,35 +23,30 @@ void init()
     cout.tie(0);
 }
 
-long long solution()
+int cntDiv(int cur)
 {
-    sort(circles.begin(), circles.end(), compare);
-    int n = circles.size();
-    long long ans = 1+n;
+    
+    long long begin = circles[cur].first;
+    long long end = circles[cur].second;
+    bool canFill = true;
 
-    pair<long long, long long> cur = circles[0];
-    for(int i = 1 ; i<n ; i++)
+    int cnt = 0;
+    long long prev = circles[cur].first;
+    cur+=1;
+    while(cur<circles.size() && circles[cur].second<=end)
     {
-        pair<long long, long long> next = circles[i];
-        if(cur.first == next.first && cur.second == next.second)
-        {
-            ans++;
-            continue;
-        }
-        else if(cur.first >= next.second)
-        {
-            cur.first = next.first;
-            cur.second = min(cur.second, next.second);
-        }
-        else if(cur.first < next.second)
-        {
-            cur.first = next.first;
-            cur.second = next.second;
-        }
+        cnt++;
+        if(prev != circles[cur].first)  canFill = false;
+        prev = circles[cur].second;
+        cur = cntDiv(cur);
     }
 
-    return ans;
+    
+    if(cnt && prev==end)    { answer += canFill; }
+    
+    return cur;
 }
+
 
 int main()
 {
@@ -57,12 +55,23 @@ int main()
     int n;
     cin>>n;
 
-    for(int i = 0 ; i<n ; i++)
-    {
-        int x, r;
-        cin>>x>>r;
+    answer += n+1;
 
-        circles.push_back(make_pair(x+r, x-r));
+    for(int i = 0 ; i < n ; i++)
+    {
+        long long x, r;
+        cin>>x>>r;
+        circles.push_back(make_pair(x-r, x+r));
     }
-    cout<<solution();
+
+    sort(circles.begin(), circles.end(), compare);
+
+    int index = 0;
+
+    while(index<n)
+    {
+        index = cntDiv(index);
+    }
+
+    cout<<answer;
 }
