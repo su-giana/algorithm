@@ -9,10 +9,9 @@ using namespace std;
 
 int n;
 vector<int> weights(10, 0);
-vector<int> nums(10, 0);
-vector<int> paralle;
-set<long long> s;
-set<long long> s_visited;
+long long num = 0;
+vector<vector<vector<int> > >dp(2, vector<vector<int> >(100000, vector<int>(0)));
+set<int> s;
 int k;
 
 void init()
@@ -22,59 +21,34 @@ void init()
     cout.tie(0);
 }
 
-bool isSym()
+pair<int, int> getWeight()
 {
-    int left = 0;
-    int right = 0;
-    for(int i = 0 ; i<10 ; i++)
+    int ans1 = 0;
+    int ans2 = 0;
+    int val = num;
+    for(int i = 1 ; i<=5 ; i++)
     {
-        if(i<5)
-        {
-            left += (5 - i) * nums[i];
-        }
-        else
-        {
-            right += (i-4) * nums[i];
-        }
+        ans1 += val%10 * (6-i);
+        ans2 += val%10 * i;
+        val /= 10;
     }
 
-    return left == right;
-}
-
-long long toNum()
-{
-    long long ans = 0;
-    for(int i = 0 ; i<10 ; i++)
-    {
-        ans += nums[i] * pow(10, 9-i);
-    }
-    return ans;
-}
-
-void store()
-{
-    long long ans = toNum();
-    if(s.find(ans) == s.end())
-    {
-        s.insert(ans);
-        paralle.push_back(ans);
-    }
+    return make_pair(ans1, ans2);
 }
 
 void dfs(int visited)
 {
-    if(s_visited.find(toNum()) != s_visited.end())
+    if(s.find(num) != s.end())
     {
         return;
     }
 
-    if(isSym())
-    {
-        store();
-    }
-    s_visited.insert(toNum());
+    pair<int, int> weight = getWeight();
+    dp[0][weight.first].push_back(num);
+    dp[1][weight.second].push_back(num);
+    s.insert(num);
 
-    if(visited == 1111111111)
+    if(visited == (1<<(n+1))-1)
     {
         return;
     }
@@ -84,18 +58,41 @@ void dfs(int visited)
         if(!(visited & (1<<i)))
         {
             visited |= (1<<i);
-            for(int j = 0 ; j<10 ; j++)
+            for(int j = 0 ; j<5 ; j++)
             {
-                if(nums[j] == 0)
+                if(num% (int)pow(10, j+1) == 0)
                 {
-                    nums[j] = weights[i];
+                    num += weights[i] * pow(10, j);
                     dfs(visited);
-                    nums[j] = 0;
+                    num -= weights[i] * pow(10, j);
                 }
             }
             visited &= ~(1<<i);
         }
     }
+}
+
+bool isJoint(int a, int b)
+{
+    long long bitmask = 0;
+    for(int i = 1 ; i<=5 ; i++)
+    {
+        if(a%10)
+        {
+            bitmask |= (1<<(a % 10));
+        }
+        a/=10;
+    }
+
+    for(int i = 1 ; i<=5 ; i++)
+    {
+        if(b%10 && bitmask & (1<<(b % 10)))
+        {
+            return true;
+        }
+        b/=10;
+    }
+    return false;
 }
 
 int main()
@@ -115,7 +112,26 @@ int main()
 
     dfs(0);
 
-    sort(paralle.begin(), paralle.end());
-    long long answer = k<paralle.size() ? paralle[k] : paralle[paralle.size()-1];
+    vector<long long> ans;
+    for(int i = 0 ; i<100000 ; i++)
+    {
+        int l_size = dp[0][i].size();
+        int r_size = dp[1][i].size();
+
+        for(int j = 0 ; j<l_size ; j++)
+        {
+            for(int k = 0 ; k<r_size ; k++)
+            {
+                if(!isJoint(dp[0][i][j], dp[1][i][k]))
+                {
+                    long long tmp = dp[0][i][j]+ dp[1][i][k] * 100000ll;
+                    ans.push_back(tmp);
+                }
+            }
+        }
+    }
+
+    sort(ans.begin(), ans.end());
+    long long answer = k<ans.size() ? ans[k] : ans[ans.size()-1];
     cout<<answer;
 }
