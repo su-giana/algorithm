@@ -12,13 +12,6 @@ void init()
     ios_base::sync_with_stdio(false);
 }
 
-vector<long long> nums;
-
-long long dfs()
-{
-    
-}
-
 vector<string> split(string s, char deli)
 {
     stringstream ss(s);
@@ -41,6 +34,8 @@ int main()
 
     cin>>s;
 
+    long long answer = 0;
+
     vector<string> minus = split(s, '-');
     int m_size = minus.size();
 
@@ -52,20 +47,19 @@ int main()
             int p_size = plus.size();
             for(int j = 0 ; j<p_size ; j++)
             {
-                nums.push_back(stoll(plus[j]));
+                answer += stoll(plus[j]);
             }
         }
         else
         {
             vector<string> plus = split(minus[i], '+');
             int p_size = plus.size();
-            nums.push_back(stoll(plus[0]));
-            for(int j = 1 ; j<p_size ; j++)
+            for(int j = 0 ; j<p_size ; j++)
             {
-                nums.push_back(stoll(plus[j]));
+                answer -= stoll(plus[j]);
             }
         }
     }
 
-    cout<<dfs();
+    cout<<answer;
 }

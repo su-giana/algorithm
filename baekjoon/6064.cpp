@@ -10,8 +10,6 @@ int t;
 
 int m, n, x, y;
 
-set<long long> s;
-
 void init()
 {
     ios_base::sync_with_stdio(false);
@@ -41,20 +39,14 @@ long long solve()
 {
     long long maximum = getMaximum();
 
-    for(long long i = 0 ; (m*i) + x <= maximum ; i++)
+    for(int i = x ; i<=maximum ; i+=m)
     {
-        long long val = m*i + x;
-        s.insert(val);
-    }
-
-    for(long long j = 0 ; (n*j) + y <= maximum ; j++)
-    {
-        long long val = n*j + y;
-        if(s.find(val)!=s.end())
+        if((i-x)%m == 0 && (i-y) % n == 0)
         {
-            return val;
+            return i;
         }
     }
+
     return -1;
 }
 
@@ -68,6 +60,5 @@ int main()
         cin>>m>>n>>x>>y;
 
         cout<<solve()<<'\n';
-        s.clear();
     }
 }
