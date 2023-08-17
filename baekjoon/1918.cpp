@@ -23,11 +23,16 @@ string subst()
     {
         if(cal[idx] == '*' || cal[idx] == '/')
         {
+            while(!st.empty() && (st.top() == '*' || st.top() == '/'))
+            {
+                ans += st.top();
+                st.pop();
+            }
             st.push(cal[idx]);
         }
         else if(cal[idx] == '+' || cal[idx] == '-')
         {
-            while(!st.empty() && (st.top() == '*' || st.top() == '/'))
+            while(!st.empty())
             {
                 ans += st.top();
                 st.pop();
@@ -67,10 +72,9 @@ int main()
     int c_size = cal.length();
     while(idx < c_size)
     {
-        cout<<ans<<endl;
         if(cal[idx] == '*' || cal[idx] == '/')
         {
-            while(!st.empty() && (st.top() == '+' || st.top() == '-'))
+            while(!st.empty() && (st.top() == '*' || st.top() == '/'))
             {
                 ans += st.top();
                 st.pop();
@@ -79,6 +83,11 @@ int main()
         }
         else if(cal[idx] == '+' || cal[idx] == '-')
         {
+            while(!st.empty())
+            {
+                ans += st.top();
+                st.pop();
+            }
             st.push(cal[idx]);
         }
         else if(cal[idx] == '(')
