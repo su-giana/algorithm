@@ -1,11 +1,12 @@
 #include <iostream>
 #include <vector>
-#include <algorithm>
-#include <numeric>
+#include <climits>
+#include <set>
 
 using namespace std;
 
 string s;
+vector<vector<bool> > dp(2500, vector<bool>(2500, true));
 
 void init()
 {
@@ -22,8 +23,6 @@ int main()
 
     int n = s.length();
 
-    vector<vector<bool> > dp(2500, vector<bool>(2500, true));
-
     for(int i = 0 ; i<n-1 ; i++)
     {
         for(int j = i+1 ; j<n ; j++)
@@ -32,12 +31,21 @@ int main()
         }
     }
 
-    for(int i = 0 ; i<n ; i++)
+    vector<int> ans(2501, 22345678);
+
+    ans[0] = 0;
+    ans[1] = 1;
+
+    for(int i = 1 ; i<=n ; i++)
     {
-        for(int j = 0 ; j<n ; j++)
+        for(int j = i ; j<=n ; j++)
         {
-            cout<<dp[i][j]<<' ';
+            if(dp[j-1][n-i])
+            {
+                ans[j] = min(ans[j], ans[i-1] + 1);
+            }
         }
-        cout<<endl;
     }
+
+    cout<<ans[n];
 }
