@@ -35,18 +35,31 @@ int main()
 
     long long minTemp = n+1;
     long long left = 0;
-    long long right = n;
+    long long right = 0;
 
-    while(left<=right)
+    while(left <= right && right <= n)
     {
-        while(right<=n && sums[right] - sums[left] < s)     right++;
-        while(right>=left && sums[right] - sums[left] >= s)    right--;
-        
-        if(right>n)    break;
+        long long cur = sums[right] - sums[left];
+        while(right <= n && cur < s)
+        {
+            right++;
+            cur = sums[right] - sums[left];
+        }
+
+        if(right > n)   break;
+
+        while(left<=right && cur >= s)
+        {
+            left++;
+            cur = sums[right] - sums[left];
+        }
+
+        if(left > n)    break;
+
         minTemp = min(minTemp, right - left + 1);
-        left++;
+        right++;
     }
 
-    if(minTemp > n)                     cout<<0;
-    else                                cout<<minTemp;
+    minTemp = minTemp > n ? 0 : minTemp;
+    cout<<minTemp;
 }
