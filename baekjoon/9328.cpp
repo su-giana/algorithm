@@ -4,15 +4,15 @@
 
 using namespace std;
 
-int w, h;
-vector<vector<char> > map(100, vector<char>(100, ' '));
-vector<vector<bool> > visited(100, vector<bool>(100, false));
-vector<string> dollors;
+int h, w;
 string key;
-vector<vector<int> > vertice(26, vector<int>());
-vector<bool> isPos(26, false);
-vector<int> dx = {1, -1, 0, 0};
+vector<vector<char> > building;
+vector<vector<bool> > visited;
+vector<vector<pair<int, int> > > stored(26, vector<pair<int, int> > ());
+vector<bool> isExist(26, false);
+vector<int> dx = {-1, 1, 0, 0};
 vector<int> dy = {0, 0, -1, 1};
+
 
 void init()
 {
@@ -21,75 +21,46 @@ void init()
     cout.tie(0);
 }
 
-void topology_sort()
+int bfs(int x, int y)
 {
-    if(key == "0")  return;
-
-    int k_size = key.size();
-    queue<int> q;
-    vector<bool> visited_(26, false);
-    for(int i = 0 ; i<k_size ; i++)
-    {
-        q.push(key[i] - 'a');
-    }
-
-    while(!q.empty())
-    {
-        int cur = q.front();
-        q.pop();
-
-        isPos[cur] = true;
-
-        int v_size = vertice[cur].size();
-        for(int i = 0 ; i<v_size ; i++)
-        {
-            int next = vertice[cur][i];
-
-            if(!visited_[next])
-            {
-                visited_[next] = true;
-                q.push(next);
-            }
-        }
-    }
-}
-
-void bfs(int x, int y)
-{
-    queue<pair<pair<int, int>, string> > q;
-    
-    q.push(make_pair(make_pair(x, y), ""));
+    queue<pair<int, int> > q;
+    int ans = 0;
     visited[x][y] = true;
+    q.push(make_pair(x, y));
 
     while(!q.empty())
     {
-        int cx = q.front().first.first;
-        int cy = q.front().first.second;
-        string keys = q.front().second;
+        int cx = q.front().first;
+        int cy = q.front().second;
         q.pop();
 
-        if(map[cx][cy] == '*')
+        if(building[cx][cy] == '*') 
         {
             continue;
         }
-        else if(map[cx][cy] == '$')
+        else if(building[cx][cy] >= 'a' && building[cx][cy] <= 'z')
         {
-            dollors.push_back(keys);
-        }
-        else if(map[cx][cy] >= 'a' && map[cx][cy] <= 'z')
-        {
-            if(keys.size() == 0)
+            if(isExist[building[cx][cy] - 'a'] == false)
             {
-                key += map[cx][cy];
-            }
-            else
-            {
-                vertice[keys[keys.size()-1] - 'A'].push_back(map[cx][cy] - 'a');
+                int v_size = stored[building[cx][cy] - 'a'].size();
+                for(int i = 0 ; i<v_size ; i++)
+                {
+                    q.push(stored[building[cx][cy] - 'a'][i]);
+                }
+                isExist[building[cx][cy] - 'a'] = true;
             }
         }
-        else if(map[cx][cy] >= 'A' && map[cx][cy] <= 'Z')
+        else if(building[cx][cy] >= 'A' && building[cx][cy] <= 'Z')
         {
-            keys = keys + map[cx][cy];
+            if(!isExist[building[cx][cy] - 'A'])
+            {
+                stored[building[cx][cy] - 'A'].push_back(make_pair(cx, cy));
+                continue;
+            }
+        }
+        else if(building[cx][cy] == '$')
+        {
+            ans++;
         }
 
         for(int i = 0 ; i<4 ; i++)
@@ -97,75 +68,73 @@ void bfs(int x, int y)
             int tx = cx + dx[i];
             int ty = cy + dy[i];
 
-            if(tx<0 || tx>=w || ty<0 || ty>=h)  continue;
+            if(tx<0 || ty<0 || tx>=h || ty>=w)  continue;
 
-            if(map[tx][ty] != '*' && !visited[tx][ty])
+            if(!visited[tx][ty])
             {
+                q.push(make_pair(tx, ty));
                 visited[tx][ty] = true;
-                q.push(make_pair(make_pair(tx, ty), keys));
             }
         }
     }
+
+    return ans;
 }
 
 int main()
 {
-    init();
-
     int t;
     cin>>t;
+    vector<int> answer;
 
     while(t--)
     {
-        cin>>w>>h;
+        cin>>h>>w;
 
-        dollors = {};
-        isPos.resize(26, false);
-        vertice.resize(26, vector<int>());
-        visited.resize(100, vector<bool>(100, false));
-
-        for(int i = 0 ; i<w ; i++)
+        building = vector<vector<char> >(h, vector<char>(w, ' '));
+        visited = vector<vector<bool> >(h, vector<bool>(w, false));
+        isExist = vector<bool>(26, false);
+        stored = vector<vector<pair<int, int> > >(26, vector<pair<int, int> >());
+        
+        for(int i = 0 ; i<h ; i++)
         {
             string s;
             cin>>s;
-
-            for(int j = 0 ; j<h ; j++)
+            for(int j = 0 ; j<w ; j++)
             {
-                map[i][j] = s[j];
+                building[i][j] = s[j];
             }
         }
 
         cin>>key;
 
-        for(int i = 0 ; i<w ; i++)
-        {
-            for(int j = 0 ; j<h ; j++)
-            {
-                if((i== 0 || j==0 || i==w-1 || j==h-1) && !visited[i][j] && map[i][j] != '*')
-                {
-                    bfs(i, j);
-                }
-            }
-        }
+        key = key == "0" ? "" : key;
 
-        topology_sort();
+        for(int i = 0 ; i<key.length() ; i++)
+        {
+            isExist[key[i] - 'a'] = true;
+        }
 
         int ans = 0;
 
-        int d_size = dollors.size();
-        for(int i = 0 ; i<d_size ; i++)
+        for(int i = 0 ; i<h ; i++)
         {
-            bool isValid = true;
-            for(int j = 0 ; j<dollors[i].length() ; j++)
+            for(int j = 0 ; j<w ; j++)
             {
-                if(!isPos[dollors[i][j] - 'A'])
+                if(i==0 || j==0 || i == h-1 || j == w-1)
                 {
-                    isValid = false;
+                    if(!visited[i][j] && building[i][j] != '*')
+                        ans += bfs(i, j);
                 }
             }
-            if(isValid) ans++;
         }
 
         cout<<ans<<'\n';
+        answer.push_back(ans);
+
+        building.clear();
+        isExist.clear();
+        stored.clear();
+        visited.clear();
     }
 }
