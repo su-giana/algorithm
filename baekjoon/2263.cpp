@@ -1,6 +1,7 @@
 #include <iostream>
 #include <vector>
 #include <algorithm>
+#define pii pair<int, int>
 
 using namespace std;
 
@@ -17,6 +18,8 @@ struct Node
     Node(int val_)
     {
         val = val_;
+        left = NULL;
+        right = NULL;
     }
 };
 
@@ -36,21 +39,28 @@ void init()
     cout.tie(0);
 }
 
-Node* makeTree(int left, int right)
+Node* makeTree(pii inOrd, pii postOrd)
 {
-    if(left > right)    return NULL;
-    if(left == right)
+    int inL = inOrd.first;
+    int inR = inOrd.second;
+    int postL = postOrd.first;
+    int postR = postOrd.second;
+
+    if(inOrd.first > inOrd.second)    return NULL;
+    if(inOrd.first == inOrd.second)
     {
-        return new Node(postOrder[right]);
+        return new Node(postOrder[postR]);
     }
 
-    int root = postOrder[right];
+    int root = postOrder[postR];
 
-    int inOrderRootIdx = find(inOrder.begin() + left, inOrder.begin() + right + 1, root) - inOrder.begin();
+    int inOrderRootIdx = find(inOrder.begin() + inL, inOrder.begin() + inR + 1, root) - inOrder.begin();
+
+    int gap = inOrderRootIdx - inL - 1;
 
     Node* node = new Node(root);
-    node->left = makeTree(left, inOrderRootIdx - 1);
-    node->right = makeTree(inOrderRootIdx + 1, right);
+    node->left = makeTree(make_pair(inL, inOrderRootIdx - 1), make_pair(postL, postL + gap));
+    node->right = makeTree(make_pair(inOrderRootIdx + 1, inR), make_pair(postL + gap + 1, postR-1));
 
     return node;
 }
@@ -75,5 +85,6 @@ int main()
         postOrder.push_back(num);
     };
 
-    printTree(makeTree(0, n-1));
+    Node* tree = makeTree(make_pair(0, n-1), make_pair(0, n-1));
+    printTree(tree);
 }
