@@ -31,92 +31,94 @@ void moveShark(Shark& shark)
 {
     if(shark.dir == 1)
     {
-        if(shark.row - shark.speed >= 1)
+        int gap = shark.row;
+        int power = shark.speed;
+
+        if(gap>power)
         {
-            shark.row = shark.row - shark.speed;
+            shark.row -= shark.speed;
+            return;
+        }
+        power -= gap;
+
+        int swamp = (power / (r-1)) % 2;
+        if(swamp == 0)
+        {
+            shark.dir = 2;
+            shark.row = 2 + power % (r-1);
         }
         else
         {
-            int mod = (shark.speed - r + shark.row - 1) % (r-1);
-            int div = (shark.speed - r + shark.row - 1) / (r-1);
-
-            if(div % 2 == 0)
-            {
-                shark.dir = 4;
-                shark.row = 2 + mod;
-            }
-            else
-            {
-                shark.row = r - 1 - mod;
-            }
+            shark.row = r - 1 - power % (r-1);
         }
     }
     else if(shark.dir == 2)
     {
-        if(shark.speed + shark.row <= r)
-        {
-            shark.row = shark.row + shark.speed;
-        }
-        else
-        {
-            int mod = (shark.speed - shark.row) % (r-1);
-            int div = (shark.speed - shark.row) / (r-1);
+        int gap = r - shark.row;
+        int power = shark.speed;
 
-            if(div % 2 == 0)
-            {
-                shark.dir = 3;
-                shark.row = r - 1 - mod;
-                
-            }
-            else
-            {
-                shark.row = 2 + mod;
-            }
+        if(gap>=power)
+        {
+            shark.row += shark.speed;
+            return;
+        }
+        power -= gap;
+
+        int swamp = (power / (r-1)) % 2;
+        if(swamp == 0)  // (2~r)
+        {
+            shark.dir = 1;
+            shark.row = r - power % (r-1);
+        }
+        else    // (1~r-1)
+        {
+            shark.row = 1 + power % (r-1);
         }
     }
     else if(shark.dir == 3)
     {
-        if(shark.speed + shark.col <= c)
+        int gap = c - shark.col;
+        int power = shark.speed;
+
+        if(gap>=power)
         {
-            shark.col = shark.col + shark.speed;
+            shark.col += shark.speed;
+            return;
+        }
+        power -= gap;
+
+        int swamp = (power / (c-1)) % 2;
+        if(swamp == 0)
+        {
+            shark.dir = 4;
+            shark.col = c - power % (c-1);
         }
         else
         {
-            int mod = (shark.speed - c + shark.col - 1) % (c-1);
-            int div = (shark.speed - c + shark.col - 1) / (c-1);
-
-            if(div % 2 == 0)
-            {
-                shark.dir = 4;
-                shark.col = c - 1 - mod;
-                
-            }
-            else
-            {
-                shark.col = 2 + mod;
-            }
+            shark.col = 1 + power % (c-1);
         }
     }
     else
     {
-        if(shark.speed <= shark.col)
+        int gap = shark.col;
+        int power = shark.speed;
+
+        if(gap>power)
         {
-            shark.col = shark.col - shark.speed;
+            shark.col -= shark.speed;
+            return;
+        }
+        power -= gap;
+
+        int swamp = (power / (c-1)) % 2;
+        if(swamp == 0)
+        {
+            shark.dir = 3;
+            shark.col = 2 + power % (c-1);
         }
         else
         {
-            int mod = (shark.speed - shark.col) % (c-1);
-            int div = (shark.speed - shark.col) / (c-1);
-
-            if(div % 2 == 0)
-            {
-                shark.dir = 3;
-                shark.col = 2 + mod;
-            }
-            else
-            {
-                shark.col = c - 1 - mod;
-            }
+            shark.col = c - 1 - power % (c-1);
         }
     }
 }
@@ -125,19 +127,8 @@ int bfs()
 {
     int ans = 0;
 
-    while(king < c)
+    while(king <= c)
     {
-
-        for(int i = 1 ; i<=r ; i++)
-        {
-            for(int j = 1 ; j<=c ; j++)
-            {
-                cout<<map[i][j].weight<<' ';
-            }
-            cout<<endl;
-        }
-        cout<<endl;
-
         for(int i = 1 ; i<=r ; i++)
         {
             if(map[i][king].weight > 0)
