@@ -10,6 +10,7 @@ int n;
 vector<vector<int> > map_(10, vector<int>(10, 0));
 vector<bool> lDiag(22, false);
 vector<bool> rDiag(22, false);
+vector<int> ans(2, 0);
 
 void init()
 {
@@ -18,7 +19,7 @@ void init()
     cout.tie(0);
 }
 
-int dfs(int x, int y, vector<pair<int, int> > bishops)
+void dfs(int x, int y, int cnt, int color)
 {
     if(y>=n)
     {
@@ -27,15 +28,18 @@ int dfs(int x, int y, vector<pair<int, int> > bishops)
     }
     if(x>=n)
     {
-        return bishops.size();
+        ans[color] = max(ans[color], cnt);
+        return;
     }
 
     if(map_[x][y] && !lDiag[y - x + (n-1)] && !rDiag[x + y])
     {
-        
+        lDiag[y - x + (n-1)] = rDiag[x + y] = true;
+        dfs(x, y+2, cnt+1, color);
+        lDiag[y - x + (n-1)] = rDiag[x + y] = false;
     }
 
-    return dfs(x, y+2, bishops);
+    dfs(x, y+2, cnt, color);
 }
 
 int main()
@@ -53,5 +57,7 @@ int main()
 
     if(n==1)    { cout<<map_[0][0]; return 0; }
     
-    cout<<dfs(0, 0, {}) + dfs(0, 1, {});
+    dfs(0, 0, 0, 0);
+    dfs(0, 1, 0, 1);
+    cout<<ans[0] + ans[1];
 }
