@@ -11,7 +11,6 @@ import java.util.StringTokenizer;
 
 public class Main {
     static int n, k, l;
-    static Map.Entry<Integer, Integer>[] apples = new AbstractMap.SimpleEntry[100];
     static Map.Entry<Integer, Character>[] actions = new AbstractMap.SimpleEntry[100];
     static int[][] board = new int[100][100];
 
@@ -27,8 +26,7 @@ public class Main {
             StringTokenizer appleTokenizer = new StringTokenizer(apple);
             int x = Integer.parseInt(appleTokenizer.nextToken());
             int y = Integer.parseInt(appleTokenizer.nextToken());
-            board[x][y] = 1;
-            apples[i] = new AbstractMap.SimpleEntry<>(x, y);
+            board[x-1][y-1] = 1;
         }
 
         l = Integer.parseInt(br.readLine());
@@ -47,7 +45,7 @@ public class Main {
 
     private static int getDir(int curDir, char turn)
     {
-        if(turn == 'L')
+        if(turn == 'D')
         {
             curDir += 1;
             curDir = curDir % 4;
@@ -66,51 +64,47 @@ public class Main {
 
     private static int solve()
     {
-        Queue<Map.Entry<Integer, Integer> > q = new ArrayDeque<>();
-        Map.Entry<Integer, Integer> curPos = new AbstractMap.SimpleEntry<>(0, 0);
-        q.offer(new AbstractMap.SimpleEntry<>(0, 0));
+        Queue<int[]> q = new ArrayDeque<>();
+        int[] curPos = {0, 0};
+        q.offer(curPos);
         board[0][0] = 2;
 
-        int curDir = 0, ans = 0;
-        int dx[] = {1, 0, -1, 0};
-        int dy[] = {0, 1, 0, -1};
+        int curDir = 0, ans = 0, actionPos = 0;
+        int dx[] = {0, 1, 0, -1};
+        int dy[] = {1, 0, -1, 0};
 
-        for(int i = 0 ; i<l ; i++)
+        while(true)
         {
-            Map.Entry<Integer, Character> action = actions[i];
-            int cx = curPos.getKey();
-            int cy = curPos.getValue();
-            int mSize = action.getKey();
-            char turn = action.getValue();
-
-            curDir = getDir(curDir, turn);
-            for(int j = 0 ; j<mSize ; j++)
+            if(actionPos < l)
             {
-                int tx = cx + dx[curDir];
-                int ty = cy + dy[curDir];
-
-                if(tx<0||ty<0||tx>=n||ty>=n)    return ans;
-                if(board[tx][ty] == 2)          return ans;
-                else if(board[tx][ty] == 1)
+                Map.Entry<Integer, Character> action = actions[actionPos];
+                int mSize = action.getKey();
+                char turn = action.getValue();
+                if(ans == mSize)
                 {
-                    board[tx][ty] = 2;
-                    curPos = new AbstractMap.SimpleEntry<>(tx, ty);
-                    q.offer(curPos);
+                    curDir = getDir(curDir, turn);
+                    actionPos++;
                 }
-                else
-                {
-                    board[tx][ty] = 2;
-                    curPos = new AbstractMap.SimpleEntry<>(tx, ty);
-                    q.offer(curPos);
-                    
-                    Map.Entry<Integer, Integer> tail = q.poll();
-                    board[tail.getKey()][tail.getValue()] = 0;
-                }
-                ans++;
             }
+            
+            int tx = curPos[0] + dx[curDir];
+            int ty = curPos[1] + dy[curDir];
+
+            if(tx<0||ty<0||tx>=n||ty>=n)    return ans+1;
+            if(board[tx][ty] == 2)          return ans+1;
+            
+            if(board[tx][ty] == 0)
+            {
+                int[] tail = q.poll();
+                board[tail[0]][tail[1]] = 0;
+            }
+
+            board[tx][ty] = 2;
+            curPos = new int[]{tx, ty};
+            q.offer(curPos);
+                
+            ans++;
         }
-        
-        return ans;
     }
 
     public static void main(String[] args) throws IOException{
