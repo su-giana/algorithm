@@ -5,11 +5,11 @@ import java.util.stream.IntStream;
 
 class Solve {
     private static final int BOARD_SIZE = 10;
-    private static final int PAPER_TYPES = 4;
+    private static final int PAPER_TYPES = 5;
 
     private int[] board = new int[BOARD_SIZE];
     private int[] papers = new int[PAPER_TYPES];
-    private Map<List<Integer>, List<Integer>> map = new HashMap<>();
+    private int ans = Integer.MAX_VALUE;
 
     public void getInput() throws IOException {
         BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
@@ -36,54 +36,46 @@ class Solve {
         br.close();
     }
 
-    private boolean isEffective(int[] bd, int[] pap) {
-        List<Integer> keyList = Arrays.stream(bd).boxed().collect(Collectors.toList());
-        return !map.containsKey(keyList) || Arrays.stream(map.get(keyList).stream().mapToInt(i -> 5 - i).toArray()).sum() > Arrays.stream(pap).sum();
-    }
-
-    private boolean isEmpty(int[] bd, int x, int y, int k) {
+    private boolean isEmpty(int x, int y, int k) {
         return IntStream.rangeClosed(x, x + k)
                 .allMatch(i -> IntStream.rangeClosed(y, y + k)
-                        .allMatch(j -> (bd[i] & (1 << j)) == 0));
+                        .allMatch(j -> (board[i] & (1 << j))>0));
     }
 
-    private void toggle(int[] bd, int x, int y, int k) {
+    private void toggle(int x, int y, int k) {
         IntStream.rangeClosed(x, x + k)
                 .forEach(i -> IntStream.rangeClosed(y, y + k)
-                        .forEach(j -> bd[i] ^= (1 << j)));
+                        .forEach(j -> board[i] ^= (1 << j)));
     }
 
-    private void dfs(int[] bd, int[] pap) {
-        if (Arrays.stream(bd).sum() == 0) {
-            int now = Arrays.stream(pap).map(i -> 5 - i).sum();
-            List<Integer> keyList = Arrays.stream(bd).boxed().collect(Collectors.toList());
-            if (!map.containsKey(keyList) || now < Arrays.stream(map.get(keyList).stream().mapToInt(Integer::intValue).toArray()).sum()) {
-                map.put(keyList, Arrays.stream(pap).map(i -> 5 - i).boxed().collect(Collectors.toList()));
-            }
+    private void dfs(int cnt, int x, int y) {
+        if (x>=9 && y>9) {
+            ans = Math.min(ans, cnt);
+            return;
+        }
+        
+        if(ans <= cnt)  return;
+        
+        if(y>9) {
+            dfs(cnt, x+1, 0);
             return;
         }
 
-        if (!isEffective(bd, pap)) {
-            return;
-        }
-
-        List<Integer> keyList = Arrays.stream(bd).boxed().collect(Collectors.toList());
-        map.put(keyList, Arrays.stream(pap).map(i -> 5 - i).boxed().collect(Collectors.toList()));
-
-        for (int k = 0; k < 5; k++) {
-            for (int i = 0; i < BOARD_SIZE - k; i++) {
-                for (int j = 0; j < BOARD_SIZE - k; j++) {
-                    if ((bd[i] & (1 << j)) > 0) {
-                        if (isEmpty(bd, i, j, k) && pap[k] > 0) {
-                            toggle(bd, i, j, k);
-                            pap[k]--;
-                            dfs(bd, pap);
-                            pap[k]++;
-                            toggle(bd, i, j, k);
+        
+            if ((board[x] & (1 << y)) > 0) {
+                for (int k = 4; k >= 0; k--) {
+                    if(x + k >9 || y+k>9)   continue;
+                        if (isEmpty(x, y, k) && papers[k] > 0) {
+                            toggle(x, y, k);
+                            papers[k]--;
+                            dfs(cnt+1, x, y);
+                            papers[k]++;
+                            toggle(x, y, k);
                         }
                     }
-                }
-            }
+        }
+        else {
+            dfs(cnt, x, y+1);
         }
     }
 
@@ -91,14 +83,10 @@ class Solve {
         getInput();
 
         BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(System.out));
-        dfs(board, papers);
+        dfs(0, 0, 0);
 
-        List<Integer> zeroArrayKey = Arrays.stream(new int[BOARD_SIZE]).boxed().collect(Collectors.toList());
-        if (map.containsKey(zeroArrayKey)) {
-            bw.write(Integer.toString(Arrays.stream(map.get(zeroArrayKey).stream().mapToInt(Integer::intValue).toArray()).sum()));
-        } else {
-            bw.write(Integer.toString(-1));
-        }
+        if(ans == Integer.MAX_VALUE)    bw.write("-1");
+        else    bw.write(Integer.toString(ans));
 
         bw.flush();
         bw.close();
@@ -111,3 +99,4 @@ public class Main {
         solve.solve();
     }
 }
+
