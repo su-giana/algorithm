@@ -4,7 +4,7 @@
 using namespace std;
 
 class node{
-public:
+private:
   string name; // state node name
 
   int cnt;
@@ -19,7 +19,7 @@ public:
 
   vector<node*> next; // next link 
 
-
+public:
   void init(const string &_name, bool _isTerminal, char _match, int _minScope, int _maxScope) {
     name = _name;
 
@@ -47,29 +47,46 @@ public:
   }
 
   void input(const char &ch){
-    
-    if(state && (match == ch)){
+    if (state && (match == ch || match == '.'))  cnt++;
+    bool isActivated = false;
+
+    if(state && minScope == 0){
       if(isTerminal){
         cout << "  >>>> accepted by " << name << endl;
       }
 
-      for(int i = 0 ; i < next.size(); i++){
-        next[i]->transition();
+      if (cnt < maxScope) {
+        this->transition();
+        isActivated = true;
+      }
+      if (cnt >= minScope && cnt <= maxScope) {
+        for(int i = 0 ; i < next.size(); i++){
+          next[i]->transition();
+        }
       }
     }
-    if (state && (match == '.')) {
-        if(isTerminal) {
+
+    else if (state && (match == '.' || match == ch)) {
+      if(isTerminal && cnt>=minScope && cnt<=maxScope) {
         cout << "  >>>> accepted by " << name << endl;
       }
 
-      for(int i = 0 ; i < next.size(); i++){
-        next[i]->transition();
+      if (cnt < maxScope) {
+        this->transition();
+        isActivated = true;
+      }
+      if (cnt >= minScope && cnt <= maxScope) {
+        for(int i = 0 ; i < next.size(); i++){
+          next[i]->transition();
+        }
       }
     }
     
-    state = 0; // deactivate this node after matching
+    if (!isActivated) state = 0; // deactivate this node after matching
   }
 };
+
+vector<node> wholeNodes;
 
 void test(vector<node> &s, const string &str){
   cout << "test for ' " << str << "'" << endl;
@@ -78,7 +95,8 @@ void test(vector<node> &s, const string &str){
     cout<< "  >> input " << str[i] << endl;
     
     // epsilon activation for s0
-    s[0].transition().activation();
+    s[s.size() - 1].transition().activation();
+    if (str.size() > 0 && str[1] == '|')  s[s.size() - 2].transition().activation();
    
     // give ch all nodes
     for(int j = 0 ; j < s.size(); j++)
@@ -87,14 +105,22 @@ void test(vector<node> &s, const string &str){
     // determine transited state
     for(int j = 0 ; j < s.size(); j++)
       s[j].activation();
+
   }
-  cout << endl;
 }
 
-vector<node> initRegexTree(string regex) {
+void initRegexTree(string regex) {
   stack<vector<pair<char, pair<int, int> > > > s;
   bool isOrMode = false;
   int idx = 0;
+
+  int cntAlp = 0;
+  for (int i = 0 ; i<regex.size() ; i++) {
+    if (regex[i]>='A' && regex[i]<='Z') cntAlp++;
+    if (regex[i] == '.')  cntAlp++;
+  }
+
+  wholeNodes = vector<node>(cntAlp);
 
   while (idx < regex.size( )) {
     if ((regex[idx]>='A' && regex[idx]<='Z') || regex[idx] == '.') {
@@ -122,7 +148,7 @@ vector<node> initRegexTree(string regex) {
     }
     if(regex[idx] == '{') {
       int start = idx;
-      while (regex[idx] != '}') idx++;
+      while (regex.size() > idx && regex[idx] != '}') idx++;
       string sp = regex.substr(start+1, idx);
       int n = stoi(sp.substr(0, sp.find(',')));
       int m = stoi(sp.substr(sp.find(' ')+1));
@@ -140,50 +166,45 @@ vector<node> initRegexTree(string regex) {
     idx++;
   }
 
-  vector<node> wholeNodes;
-  vector<node> preNodes;
-  while (s.size( ) > 2) {
-    vector<node> nodes;
-    for(pair<char, pair<int, int> > p : s.top( )) {
-      node* nd = new node;
-      nd->init(p.first + "", 0, p.first, p.second.first, p.second.second);
-      for (node n : preNodes) {
-        nd->addNode(&n);
-      }
-      nodes.push_back(*nd);
-      wholeNodes.push_back(*nd);
+  int cur = 0;
+  int now = 0;
+  idx = 0;  
+  for(pair<char, pair<int, int> > p : s.top( )) {
+    string name = to_string(idx) + "th ";
+    name += p.first;
+      wholeNodes[idx].init(name, 1, p.first, p.second.first, p.second.second);
+      idx++;
+      now++;
     }
-
     s.pop( );
-    preNodes = nodes;
-  }
 
-  if (s.size( ) == 1) {
-    vector<node> nodes;
+  while (!s.empty( )) {
+    cur = idx;
+    int curCnt = 0;
     for(pair<char, pair<int, int> > p : s.top( )) {
-      node* nd = new node;
-      nd->init(p.first + "", 1, p.first, p.second.first, p.second.second);
-      for (node n : preNodes) {
-        nd->addNode(&n);
+      string name = to_string(idx) + "th ";
+      name += p.first;
+      wholeNodes[idx].init(name, 0, p.first, p.second.first, p.second.second);
+      for (int i = 1 ; i<=now ; i++) {
+        wholeNodes[idx].addNode(&wholeNodes[cur - i]);
       }
-      nodes.push_back(*nd);
-      wholeNodes.push_back(*nd);
+      curCnt++;
+      idx++;
     }
-    preNodes = nodes;
-  }
 
-  reverse(wholeNodes.begin(), wholeNodes.end());
-  return wholeNodes;
+    now = curCnt; 
+    s.pop( );
+  }
 }
 
 int main(){
   string regex;
-  cin>>regex;
+  getline(cin, regex);
 
-  vector<node> initTree = initRegexTree(regex);
+  initRegexTree(regex);
  
   // set test cases
   string test1 = "ACDEB";
 
-  test(initTree, test1);
+  test(wholeNodes, test1);
 }
