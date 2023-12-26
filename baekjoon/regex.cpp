@@ -1,10 +1,11 @@
 #include <iostream>
 #include <vector>
 #include <stack>
+#include <queue>
 using namespace std;
 
 class node{
-private:
+  public:
   string name; // state node name
 
   int cnt;
@@ -19,9 +20,9 @@ private:
 
   vector<node*> next; // next link 
 
-public:
+
   void init(const string &_name, bool _isTerminal, char _match, int _minScope, int _maxScope) {
-    name = _name;
+    this->name = _name;
 
     isTerminal = _isTerminal;
     match = _match;
@@ -30,6 +31,10 @@ public:
     minScope = _minScope;
     maxScope = _maxScope;
     state = transited = 0;
+  }
+
+  void changeName(int n) {
+    this->name = to_string(n) + "th";
   }
 
   void addNode(node *_next){
@@ -52,7 +57,7 @@ public:
 
     if(state && minScope == 0){
       if(isTerminal){
-        cout << "  >>>> accepted by " << name << endl;
+        cout << "  >>>> accepted by " << this->name << endl;
       }
 
       if (cnt < maxScope) {
@@ -68,7 +73,7 @@ public:
 
     else if (state && (match == '.' || match == ch)) {
       if(isTerminal && cnt>=minScope && cnt<=maxScope) {
-        cout << "  >>>> accepted by " << name << endl;
+        cout << "  >>>> accepted by " << this->name << endl;
       }
 
       if (cnt < maxScope) {
@@ -110,7 +115,7 @@ void test(vector<node> &s, const string &str){
 }
 
 void initRegexTree(string regex) {
-  stack<vector<pair<char, pair<int, int> > > > s;
+  queue<vector<pair<char, pair<int, int> > > > s;
   bool isOrMode = false;
   int idx = 0;
 
@@ -125,7 +130,7 @@ void initRegexTree(string regex) {
   while (idx < regex.size( )) {
     if ((regex[idx]>='A' && regex[idx]<='Z') || regex[idx] == '.') {
       if (isOrMode) {
-        s.top( ).push_back(make_pair(regex[idx], make_pair(1, 1)));
+        s.front( ).push_back(make_pair(regex[idx], make_pair(1, 1)));
         isOrMode = false;
       }
       else {
@@ -133,14 +138,14 @@ void initRegexTree(string regex) {
       }
     }
     if(regex[idx] == '*') {
-      vector<pair<char, pair<int, int> > > cur = s.top( );
+      vector<pair<char, pair<int, int> > > cur = s.front( );
       s.pop( );
 
       cur[cur.size( ) - 1].second = make_pair(0, INT_MAX);
       s.push(cur);
     }
     if(regex[idx] == '+') {
-      vector<pair<char, pair<int, int> > > cur = s.top( );
+      vector<pair<char, pair<int, int> > > cur = s.front( );
       s.pop( );
 
       cur[cur.size( ) - 1].second = make_pair(1, INT_MAX);
@@ -153,7 +158,7 @@ void initRegexTree(string regex) {
       int n = stoi(sp.substr(0, sp.find(',')));
       int m = stoi(sp.substr(sp.find(' ')+1));
 
-      vector<pair<char, pair<int, int> > > cur = s.top( );
+      vector<pair<char, pair<int, int> > > cur = s.front( );
       s.pop( );
 
       cur[cur.size( ) - 1].second = make_pair(n, m);
@@ -169,21 +174,12 @@ void initRegexTree(string regex) {
   int cur = 0;
   int now = 0;
   idx = 0;  
-  for(pair<char, pair<int, int> > p : s.top( )) {
-    string name = to_string(idx) + "th ";
-    name += p.first;
-      wholeNodes[idx].init(name, 1, p.first, p.second.first, p.second.second);
-      idx++;
-      now++;
-    }
-    s.pop( );
 
-  while (!s.empty( )) {
+  while (s.size( ) > 1) {
     cur = idx;
     int curCnt = 0;
-    for(pair<char, pair<int, int> > p : s.top( )) {
-      string name = to_string(idx) + "th ";
-      name += p.first;
+    for(pair<char, pair<int, int> > p : s.front( )) {
+      string name = to_string(idx) + "th";
       wholeNodes[idx].init(name, 0, p.first, p.second.first, p.second.second);
       for (int i = 1 ; i<=now ; i++) {
         wholeNodes[idx].addNode(&wholeNodes[cur - i]);
@@ -195,6 +191,14 @@ void initRegexTree(string regex) {
     now = curCnt; 
     s.pop( );
   }
+
+  for(pair<char, pair<int, int> > p : s.front( )) {
+      string name = to_string(idx) + "th";
+      wholeNodes[idx].init(name, 1, p.first, p.second.first, p.second.second);
+      idx++;
+      now++;
+    }
+    s.pop( );
 }
 
 int main(){
@@ -202,9 +206,9 @@ int main(){
   getline(cin, regex);
 
   initRegexTree(regex);
- 
+
   // set test cases
-  string test1 = "ACDEB";
+  string test1 = "ABBD";
 
   test(wholeNodes, test1);
 }
